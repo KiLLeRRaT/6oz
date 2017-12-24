@@ -1131,6 +1131,8 @@ var attributes = createMap();
 attributes[symbols.default] = applyAttributeTyped;
 
 attributes['style'] = applyStyle;
+//PM 20171225 - FIX FOR SETTINGS PROPERTIES ON ELEMENT
+attributes.checked = attributes.className = attributes.disabled = attributes.value = applyProp;
 
 /**
  * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.

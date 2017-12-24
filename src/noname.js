@@ -252,6 +252,7 @@ var __stripHTML = function (rawHTML) {
 	var FN_PREFIX = "__fn";
 	var LOG_PREFIX = ">>[noname.js] ";
 	var _lib = {};
+	var _logger = log.getLogger("noname logger");
 
 	function applyToDOM(el, template, templateData) {
 		var template = __tmpl(template, templateData.data);
@@ -269,6 +270,8 @@ var __stripHTML = function (rawHTML) {
 				} else {
 					var attributes = cLex.attributes;
 					var tagAttributes = [];
+					var tagAttributesString = "";
+					var elementType = cLex.closeEnd ? "elementVoid" : "elementOpen";
 
 					if (Object.keys(attributes).length > 0) {
 						for (var attributeKey in attributes) {
@@ -285,7 +288,7 @@ var __stripHTML = function (rawHTML) {
 								if (typeof(candidateFunction) === "function") {
 									tagAttributes.push(FN_PREFIX + "." + attributeValue);
 								} else {
-									log.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
+									_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.", );
 									tagAttributes.pop();
 								}
 							} else {
@@ -294,7 +297,8 @@ var __stripHTML = function (rawHTML) {
 						}
 					}
 
-					renderFunctionBody.push('IncrementalDOM.' + (cLex.closeEnd ? "elementVoid" : "elementOpen") + '("' + cLexValue + '",null,null' + (tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "") + ');');
+					tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
+					renderFunctionBody.push('IncrementalDOM.' + elementType + '("' + cLexValue + '",null,null' + tagAttributesString + ');');
 				}
 			} else if (cLexType == "Text") {
 				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue + '");');
