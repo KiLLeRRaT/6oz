@@ -260,7 +260,7 @@ var __tmpl = (function () {
 			}
 		};
 		var template = __tmpl(
-			'<div class="true-stuff-class no-show"><h1><%:heading %></h1><p onclick="{%fireme%}"><%:paragraph %></p><div class="row" onmouseover="{%datetime_update%}">Row<div class="col">Col</div></div><pre>Time: <%:now %></pre></div>'
+			'<div class="true-stuff-class no-show"><h1><%:heading %></h1><input type="text" onblur="{%fireme%}" placeholder="Hideho" /><p onclick="{%fireme%}"><%:paragraph %></p><div class="row" onmouseover="{%datetime_update%}">Row<div class="col">Col</div></div><pre>Time: <%:now %></pre></div>'
 		, templateData.data);
 		var lexResults = __lex(template);
 
@@ -305,7 +305,7 @@ var __tmpl = (function () {
 						}
 					}
 
-					renderFunctionBody.push('IncrementalDOM.elementOpen("' + cLex.value + '",null,null' + (tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "") + ');');
+					renderFunctionBody.push('IncrementalDOM.' + (cLex.closeEnd ? "elementVoid" : "elementOpen") + '("' + cLex.value + '",null,null' + (tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "") + ');');
 				}
 			} else if (cLexType == "Text") {
 				renderFunctionBody.push('IncrementalDOM.text("' + cLex.value + '");');
