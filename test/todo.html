@@ -1,0 +1,14 @@
+<h1><%:heading %></h1>
+<div>
+	<input type="text" style="<%:isChecked ? "border-color:red" : "" %>" placeholder="Enter a new todo item here" value="<%:newTodoItem %>" onblur="newTodoItem_blur" />
+	<input type="button" value="Add" onclick="add_click" />
+	<div class="error" style="<%:newTodoItem.length == 0 ? "" : "display:none;" %>">Please enter a valid todo item</div>
+	<label>Checkbox of nothing<input onclick="checkbox_click" type="checkbox" checked="<%:isChecked ? "checked" : "" %>" /></label>
+</div>
+<ul>
+	<% for (var todoID in todoItems) {
+		var todoItem = todoItems[todoID];
+		%>
+	<li data-todo-id="<%:todoID %>" style="<%:todoItem.isDone ? "text-decoration:line-through;" : "" %>" ondblclick="todo_dblclick"><%:todoItem.name %></li>
+	<% } %>
+</ul>

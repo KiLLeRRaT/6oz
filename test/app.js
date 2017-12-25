@@ -22,7 +22,7 @@
 			"d_mouseup": d_mouseup
 		}
 	};
-	var template = '<div onmousedown="d_mousedown" onmousemove="d_mousemove" onmouseup="d_mouseup" style="position:absolute;transform:translate3d(<%=d.x %>,<%=d.y %>, 0);width:20px;height:20px;border-radius:50%;background-color:red;"></div><div class="true-stuff-class no-show"><h1><%:heading %></h1><input type="text" onblur="input_update" value="<%:inputValue %>" placeholder="Hideho" /><p onclick="fireme"><%:paragraph %></p><div class="row" onmouseover="datetime_update">Row<div class="col">Col</div></div><pre>Time: <%:now %></pre></div>';
+	var template = '<div onmousedown="d_mousedown" onmousemove="d_mousemove" onmouseup="d_mouseup" style="position:absolute;transform:translate3d(<%=d.x %>,<%=d.y %>, 0);width:20px;height:20px;border-radius:50%;background-color:red;"></div><div class="true-stuff-class no-show"><h1><%:heading %></h1><input style="width: 400px;" type="text" onkeyup="input_update" value="<%:inputValue %>" placeholder="Hideho" /><p onclick="fireme"><%:paragraph %></p><div class="row" onmouseover="datetime_update">Row<div class="col">Col</div></div><pre>Time: <%:now %></pre></div>';
 
 	__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
 
@@ -37,6 +37,7 @@
 
 	function input_update(e) {
 		templateData.data.inputValue = this.value;
+		templateData.data.heading = this.value;
 		__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
 	}
 
@@ -63,7 +64,6 @@
 	function d_mouseup(e) {
 		isMouseDown = false;
 		console.log("d_mouseup", e);
-		startDragPos = {};
 	}
 })();
 
@@ -75,30 +75,59 @@
 		"data": {
 			"heading": "My Todo App",
 			"newTodoItem": "",
-			"todoItems": []
+			"todoItems": {},
+			"isChecked": false
 		},
 		"functions": {
 			"add_click": add_click,
-			"newTodoItem_blur": newTodoItem_blur
+			"newTodoItem_blur": newTodoItem_blur,
+			"todo_dblclick": todo_dblclick,
+			"checkbox_click": checkbox_click
 		}
 	};
 	var appMountEl = document.getElementById("todoApp");
-	var template = '<h1><%:heading %></h1>' +
-		'<div><input type="text" placeholder="Insert item here" value="<%=newTodoItem %>" onblur="newTodoItem_blur" /><input type="button" value="Add" onclick="add_click" /></div>' +
-		'<ul><% for (var i = 0, l = todoItems.length; i < l; i++) { %><li><%:todoItems[i] %></li><% } %></ul>'
-	;
+	var _template = "";
 
 	function newTodoItem_blur(e) {
 		templateData.data.newTodoItem = this.value;
-		__noname.applyToDOM(appMountEl, template, templateData);
+		__noname.applyToDOM(appMountEl, _template, templateData);
 	}
 
 	function add_click(e) {
 		console.log("add item", templateData.data.newTodoItem);
-		templateData.data.todoItems.push(templateData.data.newTodoItem);
-		templateData.data.newTodoItem = new String("");
-		__noname.applyToDOM(appMountEl, template, templateData);
+		templateData.data.todoItems[guid()] = { "name": templateData.data.newTodoItem, "isDone": false };
+		templateData.data.newTodoItem = "";
+		__noname.applyToDOM(appMountEl, _template, templateData);
 	}
 
-	__noname.applyToDOM(appMountEl, template, templateData);
+	function todo_dblclick(e) {
+		templateData.data.todoItems[this.attributes["data-todo-id"].value].isDone = !templateData.data.todoItems[this.attributes["data-todo-id"].value].isDone;
+		__noname.applyToDOM(appMountEl, _template, templateData);
+	}
+
+	function checkbox_click(e) {
+		templateData.data.isChecked = this.checked;
+		__noname.applyToDOM(appMountEl, _template, templateData);
+	}
+
+	function guid() {
+		function S4() {
+			return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+		}
+		 
+		return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+	}
+
+	function run() {
+		fetch("todo.html").then(function(response) {
+			return response.text();
+		}).then(function (template) {
+			_template = template;
+			__noname.applyToDOM(appMountEl, _template, templateData);
+		}).catch(function (err) {
+			console.error("Couldn't fetch todo template", err);
+		});
+	}
+
+	run();
 })();

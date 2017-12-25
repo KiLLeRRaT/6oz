@@ -288,7 +288,7 @@ var __stripHTML = function (rawHTML) {
 								if (typeof(candidateFunction) === "function") {
 									tagAttributes.push(FN_PREFIX + "." + attributeValue);
 								} else {
-									_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.", );
+									_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
 									tagAttributes.pop();
 								}
 							} else {
