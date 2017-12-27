@@ -315,12 +315,12 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		IncrementalDOM.patch(el, renderFunction, templateData.functions);
 		return {
 			"update": function (updateTemplateData) {
-				__noname.applyToDOM(el, template, updateTemplateData);
+				applyToDOM(el, template, updateTemplateData);
 			}
 		};
 	}
 
 	_lib.applyToDOM = applyToDOM;
 
-	window.__noname = _lib;
+	window.__6oz = _lib;
 })();

@@ -24,7 +24,7 @@
 	};
 	var template = '<div onmousedown="d_mousedown" onmousemove="d_mousemove" onmouseup="d_mouseup" style="position:absolute;transform:translate3d(<%=d.x %>,<%=d.y %>, 0);width:20px;height:20px;border-radius:50%;background-color:red;"></div><div class="true-stuff-class no-show"><h1><%:heading %></h1><input style="width: 400px;" type="text" onkeyup="input_update" value="<%:inputValue %>" placeholder="Hideho" /><p onclick="fireme"><%:paragraph %></p><div class="row" onmouseover="datetime_update">Row<div class="col">Col</div></div><pre>Time: <%:now %></pre></div>';
 
-	__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
+	__6oz.applyToDOM(document.getElementById("basicApp"), template, templateData);
 
 	function fireme(e) {
 		alert("You're fired!");
@@ -32,13 +32,13 @@
 
 	function datetime_update() {
 		templateData.data.now = new Date().toString();
-		__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
+		__6oz.applyToDOM(document.getElementById("basicApp"), template, templateData);
 	}
 
 	function input_update(e) {
 		templateData.data.inputValue = this.value;
 		templateData.data.heading = this.value;
-		__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
+		__6oz.applyToDOM(document.getElementById("basicApp"), template, templateData);
 	}
 
 	var startDragPos = {};
@@ -57,7 +57,7 @@
 			templateData.data.d.x = (e.clientX - startDragPos.x) + "px";
 			templateData.data.d.y = (e.clientY - startDragPos.y) + "px";
 			console.log(templateData.data.d);
-			__noname.applyToDOM(document.getElementById("basicApp"), template, templateData);
+			__6oz.applyToDOM(document.getElementById("basicApp"), template, templateData);
 		}
 	}
 
@@ -124,7 +124,7 @@
 			return response.text();
 		}).then(function (template) {
 			_template = template;
-			_context = __noname.applyToDOM(appMountEl, _template, templateData);
+			_context = __6oz.applyToDOM(appMountEl, _template, templateData);
 		}).catch(function (err) {
 			console.error("Couldn't fetch todo template", err);
 		});
