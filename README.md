@@ -11,7 +11,7 @@ You will need to download and place both the Incremental DOM and noname.js JavaS
 <script type="text/javascript" src="noname.min.js"></script>
 ```
 
-### Templating
+## Templating
 
 Templating is done using code blocks.  Within the code blocks you can use normal JavaScript.  Simple!  The code blocks are inspired by and match to ASP.Net Web Forms code blocks.  To start a code block write `<%` and to close a code block write `%>`.
 
@@ -82,6 +82,30 @@ var templateData = {
 	<li>Mate</li>
 	<li>Dave</li>
 </ul>
+```
+## Incremental DOM
+noname.js uses Google's Incremental DOM JavaScript library to efficiently patch rendered templates against the DOM.  The low level complexities are all handled by noname.js.
+
+To start call the `applyToDOM(mountElement, templateOrTemplateID, data)` function with three arguments.  This will return a context to allow you to easily update the template with new/changed data.
+
+```
+var elMount = document.getElementById("app");
+var template = '<div onclick="demoTemplate_click" class="demo-template"><%:text %></div>';
+var demoTemplate_click = function () {
+	alert("Demo template clicked!");
+};
+var templateData = {
+	"data": {
+		"text": "Hello world"
+	},
+	"functions": {
+		"demoTemplate_click": demoTemplate_click
+	}
+};
+var context = __noname.applyToDOM(elMount, template, templateData);
+
+templateData.data.text = "New text will be updated";
+context.update(templateData);
 ```
 
 ## Authors

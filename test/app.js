@@ -87,27 +87,28 @@
 	};
 	var appMountEl = document.getElementById("todoApp");
 	var _template = "";
+	var _context;
 
 	function newTodoItem_blur(e) {
 		templateData.data.newTodoItem = this.value;
-		__noname.applyToDOM(appMountEl, _template, templateData);
+		_context.update(templateData);
 	}
 
 	function add_click(e) {
 		console.log("add item", templateData.data.newTodoItem);
 		templateData.data.todoItems[guid()] = { "name": templateData.data.newTodoItem, "isDone": false };
 		templateData.data.newTodoItem = "";
-		__noname.applyToDOM(appMountEl, _template, templateData);
+		_context.update(templateData);
 	}
 
 	function todo_dblclick(e) {
 		templateData.data.todoItems[this.attributes["data-todo-id"].value].isDone = !templateData.data.todoItems[this.attributes["data-todo-id"].value].isDone;
-		__noname.applyToDOM(appMountEl, _template, templateData);
+		_context.update(templateData);
 	}
 
 	function checkbox_click(e) {
 		templateData.data.isChecked = this.checked;
-		__noname.applyToDOM(appMountEl, _template, templateData);
+		_context.update(templateData);
 	}
 
 	function guid() {
@@ -123,7 +124,7 @@
 			return response.text();
 		}).then(function (template) {
 			_template = template;
-			__noname.applyToDOM(appMountEl, _template, templateData);
+			_context = __noname.applyToDOM(appMountEl, _template, templateData);
 		}).catch(function (err) {
 			console.error("Couldn't fetch todo template", err);
 		});

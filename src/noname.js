@@ -260,8 +260,8 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	var _logger = log.getLogger("noname logger");
 
 	function applyToDOM(el, template, templateData) {
-		var template = __tmpl(template, templateData.data);
-		var lexResults = __lex(template);
+		var renderedTemplate = __tmpl(template, templateData.data);
+		var lexResults = __lex(renderedTemplate);
 		var renderFunctionBody = [];
 
 		for (var i = 0, l = lexResults.length; i < l; i++) {
@@ -313,6 +313,11 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		var renderFunction = new Function(FN_PREFIX, renderFunctionBody.join(""));
 
 		IncrementalDOM.patch(el, renderFunction, templateData.functions);
+		return {
+			"update": function (updateTemplateData) {
+				__noname.applyToDOM(el, template, updateTemplateData);
+			}
+		};
 	}
 
 	_lib.applyToDOM = applyToDOM;
