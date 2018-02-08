@@ -255,14 +255,47 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	 */
 	var isFunctionRE = /^on[a-z]+$/i;
 	var FN_PREFIX = "__fn";
-	var LOG_PREFIX = ">>[noname.js] ";
+	var LOG_PREFIX = ">>[6oz.js] ";
 	var _lib = {};
-	var _logger = log.getLogger("noname logger");
+	var _logger = log.getLogger("6oz logger");
 
 	function applyToDOM(el, template, templateData) {
 		var renderedTemplate = __tmpl(template, templateData.data);
 		var lexResults = __lex(renderedTemplate);
 		var renderFunctionBody = [];
+		var processTag = function (cLex) {
+			var attributes = cLex.attributes;
+			var tagAttributes = [];
+			var tagAttributesString = "";
+			var elementType = cLex.closeEnd ? "elementVoid" : "elementOpen";
+
+			if (Object.keys(attributes).length > 0) {
+				for (var attributeKey in attributes) {
+					var attribute = attributes[attributeKey];
+					var attributeName = attribute.name;
+					var attributeValue = attribute.value;
+					var isEventAttribute = isFunctionRE.test(attributeName);
+
+					tagAttributes.push('"' + attribute.name + '"');
+
+					if (isEventAttribute) {
+						var candidateFunction = templateData.functions[attributeValue];
+
+						if (typeof(candidateFunction) === "function") {
+							tagAttributes.push(FN_PREFIX + "." + attributeValue);
+						} else {
+							_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
+							tagAttributes.pop();
+						}
+					} else {
+						tagAttributes.push('"' + attribute.value + '"');
+					}
+				}
+			}
+
+			tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
+			return { "elementType": elementType, "tagAttributesString": tagAttributesString };
+		};
 
 		for (var i = 0, l = lexResults.length; i < l; i++) {
 			var cLex = lexResults[i];
@@ -273,37 +306,9 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 				if (cLex.closeStart) {
 					renderFunctionBody.push('IncrementalDOM.elementClose("' + cLexValue + '");');
 				} else {
-					var attributes = cLex.attributes;
-					var tagAttributes = [];
-					var tagAttributesString = "";
-					var elementType = cLex.closeEnd ? "elementVoid" : "elementOpen";
+					var tagDetails = processTag(cLex);
 
-					if (Object.keys(attributes).length > 0) {
-						for (var attributeKey in attributes) {
-							var attribute = attributes[attributeKey];
-							var attributeName = attribute.name;
-							var attributeValue = attribute.value;
-							var isEventAttribute = isFunctionRE.test(attributeName);
-
-							tagAttributes.push('"' + attribute.name + '"');
-
-							if (isEventAttribute) {
-								var candidateFunction = templateData.functions[attributeValue];
-
-								if (typeof(candidateFunction) === "function") {
-									tagAttributes.push(FN_PREFIX + "." + attributeValue);
-								} else {
-									_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
-									tagAttributes.pop();
-								}
-							} else {
-								tagAttributes.push('"' + attribute.value + '"');
-							}
-						}
-					}
-
-					tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
-					renderFunctionBody.push('IncrementalDOM.' + elementType + '("' + cLexValue + '",null,null' + tagAttributesString + ');');
+					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",null,null' + tagDetails.tagAttributesString + ');');
 				}
 			} else if (cLexType == "Text") {
 				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue + '");');
@@ -319,8 +324,12 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			}
 		};
 	}
+	function addComponent() {
+
+	}
 
 	_lib.applyToDOM = applyToDOM;
+	_lib.addComponent = addComponent;
 
-	window.__noname = _lib;
+	window.__6oz = _lib;
 })();
