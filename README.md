@@ -1,14 +1,14 @@
-# noname.js
+# 6oz.js
 
 A JavaScript library using intuitive templating and Google's Incremental DOM library to efficiently update data changes to the real browser DOM.
 
 ## Getting Started
 
-You will need to download and place both the Incremental DOM and noname.js JavaScript files on your website.  Load Incremental DOM first.  The copy of Incremental DOM in this repository has a bug fix that sets the elements actual properties for attributes like `value`, `checked`, `disabled`, etc.
+You will need to download and place both the Incremental DOM and 6oz.js JavaScript files on your website.  Load Incremental DOM first.  The copy of Incremental DOM in this repository has a bug fix that sets the elements actual properties for attributes like `value`, `checked`, `disabled`, etc.
 
 ```
 <script type="text/javascript" src="incremental-dom-min.js"></script>
-<script type="text/javascript" src="noname.min.js"></script>
+<script type="text/javascript" src="6oz.min.js"></script>
 ```
 
 ## Templating
@@ -84,7 +84,7 @@ var templateData = {
 </ul>
 ```
 ## Incremental DOM
-noname.js uses Google's Incremental DOM JavaScript library to efficiently patch rendered templates against the DOM.  The low level complexities are all handled by noname.js.
+6oz.js uses Google's Incremental DOM JavaScript library to efficiently patch rendered templates against the DOM.  The low level complexities are all handled by 6oz.js.
 
 To start call the `applyToDOM(mountElement, templateOrTemplateID, data)` function with three arguments.  This will return a context to allow you to easily update the template with new/changed data.
 
@@ -102,7 +102,7 @@ var templateData = {
 		"demoTemplate_click": demoTemplate_click
 	}
 };
-var context = __noname.applyToDOM(elMount, template, templateData);
+var context = __6oz.applyToDOM(elMount, template, templateData);
 
 templateData.data.text = "New text will be updated";
 context.update(templateData);
