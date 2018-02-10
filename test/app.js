@@ -132,3 +132,76 @@
 
 	run();
 })();
+
+/**
+ * COMPONENT APP
+ */
+(function () {
+	var templateData = {
+		"data": {
+			"heading": "Component Test",
+			"com1": [
+				{ "heading": "Hello world", "text": "this is the first com1" },
+				{ "heading": "Damn Daniel", "text": "Back at it again!" },
+				{ "heading": "In the", "text": "black and white" },
+				{ "heading": "Vans!", "text": "Haha" }
+			]
+		},
+		"functions": {
+			"heading_click": heading_click
+		}
+	};
+	var appMountEl = document.getElementById("componentApp");
+	var _template = "";
+	var _context;
+	var _components = {
+		"com1": {
+			"name": "custom-component-1",
+			"template": '<h6>Custom Component 1 - <%=props.heading %></h6><p><%=props.text %></p><custom-component-2 text="<%=props.text %> - com2 subby" />'
+		},
+		"com2": {
+			"name": "custom-component-2",
+			"template": "<div><pre>This is the sub component (com 2)</pre></div><p><%=props.text %></p>"
+		}
+	};
+
+	function heading_click(e) {
+		var com1 = templateData.data.com1;
+		var reverseText = function (text) {
+			return text.split("").reverse().join("");
+		}
+
+		for (var i = 0, l = com1.length; i < l; i++) {
+			var c = com1[i];
+
+			c.heading = reverseText(c.heading);
+			c.text = reverseText(c.text);
+		}
+
+		_context.update(templateData);
+	}
+
+	function guid() {
+		function S4() {
+			return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+		}
+		 
+		return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+	}
+
+	function run() {
+		__6oz.addComponent(_components.com1.name, _components.com1.template);
+		__6oz.addComponent(_components.com2.name, _components.com2.template);
+
+		fetch("componentApp.html").then(function(response) {
+			return response.text();
+		}).then(function (template) {
+			_template = template;
+			_context = __6oz.applyToDOM(appMountEl, _template, templateData);
+		}).catch(function (err) {
+			console.error("Couldn't fetch todo template", err);
+		});
+	}
+
+	run();
+})();

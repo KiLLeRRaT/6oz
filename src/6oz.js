@@ -258,12 +258,28 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	var LOG_PREFIX = ">>[6oz.js] ";
 	var _lib = {};
 	var _logger = log.getLogger("6oz logger");
+	var _components = {};
 
 	function applyToDOM(el, template, templateData) {
 		var renderedTemplate = __tmpl(template, templateData.data);
 		var lexResults = __lex(renderedTemplate);
+		var renderFunctionBody = processLexTemplate(lexResults, templateData);
+		var renderFunction = new Function(FN_PREFIX, renderFunctionBody.join(""));
+
+		IncrementalDOM.patch(el, renderFunction, templateData.functions);
+		return {
+			"update": function (updateTemplateData) {
+				applyToDOM(el, template, updateTemplateData);
+			}
+		};
+	}
+	function processLexTemplate(lexResults, templateData) {
 		var renderFunctionBody = [];
 		var processTag = function (cLex) {
+			if (!cLex) {
+				return false;
+			}
+
 			var attributes = cLex.attributes;
 			var tagAttributes = [];
 			var tagAttributesString = "";
@@ -296,15 +312,27 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
 			return { "elementType": elementType, "tagAttributesString": tagAttributesString };
 		};
+		var isComponentTag = function (tagName) {
+			return tagName && tagName.indexOf("-") > -1;
+		};
 
 		for (var i = 0, l = lexResults.length; i < l; i++) {
 			var cLex = lexResults[i];
 			var cLexType = cLex.type;
 			var cLexValue = cLex.value;
+			var thisIsComponentTag = isComponentTag(cLexValue);
 
 			if (cLexType == "Tag") {
-				if (cLex.closeStart) {
+				if (cLex.closeStart && !thisIsComponentTag) {
 					renderFunctionBody.push('IncrementalDOM.elementClose("' + cLexValue + '");');
+				} else if (thisIsComponentTag) {
+					var componentResults = processComponent(cLex, templateData);
+
+					if (componentResults === false) {
+						continue;
+					}
+
+					renderFunctionBody = renderFunctionBody.concat(componentResults);
 				} else {
 					var tagDetails = processTag(cLex);
 
@@ -315,17 +343,46 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			}
 		}
 
-		var renderFunction = new Function(FN_PREFIX, renderFunctionBody.join(""));
-
-		IncrementalDOM.patch(el, renderFunction, templateData.functions);
-		return {
-			"update": function (updateTemplateData) {
-				applyToDOM(el, template, updateTemplateData);
-			}
-		};
+		return renderFunctionBody;
 	}
-	function addComponent() {
+	function processComponent(cLex, templateData) {
+		var componentName = cLex.value.toLowerCase();
+		var componentDetails = _components[componentName];
+		
+		if (!componentDetails) {
+			return false;
+		}
 
+		var cLexAttributes = cLex.attributes;
+		var attributes = {};
+
+		for (var key in cLexAttributes) {
+			attributes[key] = cLexAttributes[key].value;
+		}
+
+		var renderedTemplate = __tmpl(componentDetails.template, { "props": attributes });
+		var lexResults = __lex(renderedTemplate);
+
+		return processLexTemplate(lexResults, templateData);
+	}
+	function addComponent(componentName, template, controller) {
+		if (!componentName || !template) {
+			_logger.warn(LOG_PREFIX + "You must provide a componentName and template.");
+			return false;
+		}
+
+		componentName = componentName.toLowerCase();
+
+		if (_components[componentName]) {
+			_logger.warn(LOG_PREFIX + "A component with name " + componentName + " has already been added.");
+			return;
+		}
+
+		_components[componentName] = {
+			"template": template,
+			"controller": controller
+		};
+		return true;
 	}
 
 	_lib.applyToDOM = applyToDOM;
