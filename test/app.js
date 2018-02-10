@@ -148,7 +148,13 @@
 			]
 		},
 		"functions": {
-			"heading_click": heading_click
+			"heading_click": heading_click,
+			"com1Heading_click": function () {
+				alert("com1 heading has been clicked");
+			},
+			"com2_click": function () {
+				alert("com2 has been clicked");
+			}
 		}
 	};
 	var appMountEl = document.getElementById("componentApp");
@@ -157,11 +163,11 @@
 	var _components = {
 		"com1": {
 			"name": "custom-component-1",
-			"template": '<h6>Custom Component 1 - <%=props.heading %></h6><p><%=props.text %></p><custom-component-2 text="<%=props.text %> - com2 subby" />'
+			"template": '<h6 onclick="com1Heading_click">Custom Component 1 - <%=props.heading %></h6><p><%=props.text %></p><custom-component-2 text="<%=props.text %> - com2 subby" />'
 		},
 		"com2": {
 			"name": "custom-component-2",
-			"template": "<div><pre>This is the sub component (com 2)</pre></div><p><%=props.text %></p>"
+			"template": '<div onclick="com2_click"><pre>This is the sub component (com 2)</pre></div><p><%=props.text %></p>'
 		}
 	};
 
