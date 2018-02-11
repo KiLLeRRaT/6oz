@@ -402,7 +402,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 		return processLexTemplate(lexResults, templateData);
 	}
-	function addComponent(componentName, template, controller) {
+	function addComponent(componentName, template) {
 		if (!componentName || !template) {
 			_logger.warn(LOG_PREFIX + "You must provide a componentName and template.");
 			return false;
@@ -410,14 +410,18 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 		componentName = componentName.toLowerCase();
 
+		if (!/-[a-zA-Z0-9][^-]?$/.test(componentName)) {
+			_logger.warn(LOG_PREFIX + "You must provide a valid component name [" + componentName + "].  It must be kebab case, must contain at least one hyphen, and must not end with a hyphen.");
+			return;
+		}
+
 		if (_components[componentName]) {
 			_logger.warn(LOG_PREFIX + "A component with name " + componentName + " has already been added.");
 			return;
 		}
 
 		_components[componentName] = {
-			"template": template,
-			"controller": controller
+			"template": template
 		};
 		return true;
 	}

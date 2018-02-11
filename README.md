@@ -108,6 +108,35 @@ templateData.data.text = "New text will be updated";
 context.update(templateData);
 ```
 
+## Components (beta)
+6oz.js allows you to create components which are templates that can be reused.  You can define components using the snippet below.  The component name must be kebab case and contain at least one hyphen.  The second parameter must be the template or the template ID.
+
+```
+__6oz.addComponent("my-custom-component-name", "<h1>This is my template</div>");
+__6oz.addComponent("my-custom-component-name-2", "myTemplateID");
+```
+
+Use the components in any of your templates (including component templates, components in components baby!) in your app by writing a tag with your component name.  You can pass data to be used in the components using attributes on the tag.  If it's not text, use curly braces to pass JavaScript objects through.
+
+```
+<% var templateDataInScope = { "arrayOfStuff": [1, 2, 3], "o": { "value": "Hello world" } }; %>
+<my-custom-component-name bodyText="This is an example of just passing a string in." customData={templateDataInScope} hardCodedData={{ "o": "Fixed data" }} />
+```
+
+Accessing the data passed into the component within the template is simple.  Just use the `props` object in the template to access the data (see below).
+
+```
+<h1>This is the my component template</h1>
+<p><%=props.bodyText %></p>
+<pre><%=props.customData.o.value %></pre>
+<ul>
+<% var arr = props.customData.arrayOfStuff;
+for (var i = 0, l = arr.length; i < l; i++) { %>
+<li><%=arr[i] %></li>
+<% } %>
+</ul>
+```
+
 ## Authors
 
 **Phillip Moon**
