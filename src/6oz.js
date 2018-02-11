@@ -131,19 +131,37 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 									char = template[++current];
 					
 									var quoteType = ' ';
+									var isScopedValue = false;
+									var openBraceCount = 0;
 
-									if (char === '"' || char === '\'' || char === ' ' || char === '\n') {
-										quoteType = char;
+									if (char === '"' || char === '\'' || char === ' ' || char === '\n' || char === '{') {
+										isScopedValue = char === '{';
+										quoteType = isScopedValue ? '}' : char;
 										char = template[++current];
 									}
-					
+
+									if (isScopedValue) {
+										attrValue += '{';
+									}
+
 									// Iterate to end of quote type, or end of tag
 									while ((current < length) && ((char !== '>') && (char !== '/' || template[current + 1] !== '>'))) {
-										if (char === quoteType) {
+										if ((!isScopedValue || (isScopedValue && openBraceCount <= 0)) && char === quoteType) {
+											if (isScopedValue) {
+												attrValue += '}';
+											}
+
 											char = template[++current];
 											break;
 										} else {
 											attrValue += char;
+											
+											if (char === '{') {
+												openBraceCount++;
+											} else if (char === '}') {
+												openBraceCount--;
+											}
+
 											char = template[++current];
 										}
 									}
@@ -234,9 +252,10 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 				// Convert the template into pure JavaScript
 				// Grabbed apostrophe fix from http://weblog.west-wind.com/posts/2008/Oct/13/Client-Templating-with-jQuery
 				str
+					.replace(new RegExp("\{(.+?(\}+)?)\}", "g"), "',__6oz.registerData($1),'")
 					.replace(/[\r\t\n]/g, " ")
 					.replace(new RegExp("'(?=[^" + DELIMITER.end.substr(0, 1) + "]*" + DELIMITER.end + ")", "g"), "\t")
-					.split("'").join("\\'")
+					.split("(?!\})'(?!\{)").join("\\'")
 					.split("\t").join("'")
 					.replace(new RegExp(DELIMITER.start + ":(.+?)" + DELIMITER.end, "g"), "',__escapeHTML($1),'")
 					.replace(new RegExp(DELIMITER.start + "=(.+?)" + DELIMITER.end, "g"), "',$1,'")
@@ -259,6 +278,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	var _lib = {};
 	var _logger = log.getLogger("6oz logger");
 	var _components = {};
+	var _dataRegister = {};
 
 	function applyToDOM(el, template, templateData) {
 		var renderedTemplate = __tmpl(template, templateData.data);
@@ -267,6 +287,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		var renderFunction = new Function(FN_PREFIX, renderFunctionBody.join(""));
 
 		IncrementalDOM.patch(el, renderFunction, templateData.functions);
+		_dataRegister = {};
 		return {
 			"update": function (updateTemplateData) {
 				applyToDOM(el, template, updateTemplateData);
@@ -355,9 +376,25 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 		var cLexAttributes = cLex.attributes;
 		var attributes = {};
+		var checkForScopedValue = function (value) {
+			return value && /^\{(.*)\}$/.exec(value);
+		};
 
 		for (var key in cLexAttributes) {
-			attributes[key] = cLexAttributes[key].value;
+			var attributeValue = cLexAttributes[key].value;
+			var scopedValueResult = checkForScopedValue(attributeValue);
+
+			if (scopedValueResult && scopedValueResult.length > 1 && scopedValueResult[1]) {
+				var scopedValue = scopedValueResult[1];
+				
+				if (_dataRegister[scopedValue]) {
+					attributes[key] = _dataRegister[scopedValue];
+				} else {
+					attributes[key] = undefined;
+				}
+			} else {
+				attributes[key] = attributeValue;
+			}
 		}
 
 		var renderedTemplate = __tmpl(componentDetails.template, { "props": attributes });
@@ -384,9 +421,23 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		};
 		return true;
 	}
+	function registerData(data) {
+		var dataKey = guid();
+
+		_dataRegister[dataKey] = data;
+		return "{" + dataKey + "}";
+	}
+	function guid() {
+		function S4() {
+			return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+		}
+		 
+		return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+	}
 
 	_lib.applyToDOM = applyToDOM;
 	_lib.addComponent = addComponent;
+	_lib.registerData = registerData;
 
 	window.__6oz = _lib;
 })();

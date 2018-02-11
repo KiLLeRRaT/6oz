@@ -1,6 +1,8 @@
 <h1 onclick="heading_click"><%=heading %></h1>
+<span><%="Oh hi's it's me'" %></span>
 <% for (var i = 0, l = com1.length; i < l; i++) {
 	var cCom = com1[i];
 	%>
-	<custom-component-1 heading="<%=cCom.heading %>" text="<%=cCom.text %>" />
+	<!-- SHIT NEED SOMETHING HERE TO BRIDGE THE DATA FROM TMPL TO LEX -->
+	<custom-component-1 heading={cCom.heading} text="<%=cCom.text %>" />
 <% } %>
