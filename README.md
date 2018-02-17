@@ -108,25 +108,48 @@ templateData.data.text = "New text will be updated";
 context.update(templateData);
 ```
 
-## Components (beta)
+##### Lists (key-id)
+Within your templates you may have items that are repeated such as list items (li) or select options (option).  Incremental DOM can have a hard time discerning the differences when updating if the items are similar.  To aid the diffing process, add an attribute of `key-id` on your repeating element.  More about this here, http://google.github.io/incremental-dom/#conditional-rendering/array-of-items.
+
+## Components
 6oz.js allows you to create components which are templates that can be reused.  You can define components using the snippet below.  The component name must be kebab case and contain at least one hyphen.  The second parameter must be the template or the template ID.
 
 ```
-__6oz.addComponent("my-custom-component-name", "<h1>This is my template</div>");
-__6oz.addComponent("my-custom-component-name-2", "myTemplateID");
+__6oz.addComponent({
+    "componentName": "my-custom-component-name",
+    "template": "<h1>This is my template</div>",
+    "controller": function (props) {
+        this.myFunctionInsideComponent = function () {
+            console.log("myFunctionInsideComponent controller function invoked");
+        };
+    } 
+});
+__6oz.addComponent({
+    "componentName": "my-custom-component-name-2",
+    "template": "myTemplateID"
+});
 ```
 
-Use the components in any of your templates (including component templates, components in components baby!) in your app by writing a tag with your component name.  You can pass data to be used in the components using attributes on the tag.  If it's not text, use curly braces to pass JavaScript objects through.
+Use the components in any of your templates (including component templates, components in components baby!) in your app by writing a tag with your component name.  You can pass data to be used in the components using attributes on the tag.  If it's not text, use curly braces to pass JavaScript objects/data through.
+
+_Below is template code_
+```
+<% var templateDataInScope = {
+    "arrayOfStuff": [1, 2, 3],
+    "o": {
+        "value": "Hello world"
+    }
+}; %>
+<my-custom-component-name
+    bodyText="This is an example of just passing a string in."
+    customData={templateDataInScope}
+    hardCodedData={{ "o": "Fixed data" }} />
+```
+
+Accessing the data passed into the component within the template is simple.  Just use the `props` object in the template to access the data.  You can also access the controller data and functions by using the `controller` object in the template.
 
 ```
-<% var templateDataInScope = { "arrayOfStuff": [1, 2, 3], "o": { "value": "Hello world" } }; %>
-<my-custom-component-name bodyText="This is an example of just passing a string in." customData={templateDataInScope} hardCodedData={{ "o": "Fixed data" }} />
-```
-
-Accessing the data passed into the component within the template is simple.  Just use the `props` object in the template to access the data (see below).
-
-```
-<h1>This is the my component template</h1>
+<h1 onclick="controller.myControllerFunction">This is the my component template</h1>
 <p><%=props.bodyText %></p>
 <pre><%=props.customData.o.value %></pre>
 <ul>

@@ -1,0 +1,10 @@
+<div class="chat-window">
+<% for (var i = 0, l = props.messages.length; i < l; i++) { 
+	var message = props.messages[i];
+	%>
+	<chat-message message={message.text} isCurrentUser={props.userID == message.userID} />
+<% } %>
+<% if (props.visitorIsTyping) { %>
+	<chat-typing-indicator />
+<% } %>
+</div>

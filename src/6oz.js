@@ -1,3 +1,14 @@
+/**
+ * v1.0.0
+ * 6oz because coffee
+      ( (
+      ) )
+    ........
+    |      |]
+    \      /
+     `----'
+ */
+
 /*! loglevel - v1.4.1 - https://github.com/pimterry/loglevel - (c) 2016 Tim Perry - licensed MIT */
 !function(a,b){"use strict";"function"==typeof define&&define.amd?define(b):"object"==typeof module&&module.exports?module.exports=b():a.log=b()}(this,function(){"use strict";function a(a){return typeof console===h?!1:void 0!==console[a]?b(console,a):void 0!==console.log?b(console,"log"):g}function b(a,b){var c=a[b];if("function"==typeof c.bind)return c.bind(a);try{return Function.prototype.bind.call(c,a)}catch(d){return function(){return Function.prototype.apply.apply(c,[a,arguments])}}}function c(a,b,c){return function(){typeof console!==h&&(d.call(this,b,c),this[a].apply(this,arguments))}}function d(a,b){for(var c=0;c<i.length;c++){var d=i[c];this[d]=a>c?g:this.methodFactory(d,a,b)}}function e(b,d,e){return a(b)||c.apply(this,arguments)}function f(a,b,c){function f(a){var b=(i[a]||"silent").toUpperCase();try{return void(window.localStorage[l]=b)}catch(c){}try{window.document.cookie=encodeURIComponent(l)+"="+b+";"}catch(c){}}function g(){var a;try{a=window.localStorage[l]}catch(b){}if(typeof a===h)try{var c=window.document.cookie,d=c.indexOf(encodeURIComponent(l)+"=");d&&(a=/^([^;]+)/.exec(c.slice(d))[1])}catch(b){}return void 0===k.levels[a]&&(a=void 0),a}var j,k=this,l="loglevel";a&&(l+=":"+a),k.levels={TRACE:0,DEBUG:1,INFO:2,WARN:3,ERROR:4,SILENT:5},k.methodFactory=c||e,k.getLevel=function(){return j},k.setLevel=function(b,c){if("string"==typeof b&&void 0!==k.levels[b.toUpperCase()]&&(b=k.levels[b.toUpperCase()]),!("number"==typeof b&&b>=0&&b<=k.levels.SILENT))throw"log.setLevel() called with invalid level: "+b;return j=b,c!==!1&&f(b),d.call(k,b,a),typeof console===h&&b<k.levels.SILENT?"No console available for logging":void 0},k.setDefaultLevel=function(a){g()||k.setLevel(a,!1)},k.enableAll=function(a){k.setLevel(k.levels.TRACE,a)},k.disableAll=function(a){k.setLevel(k.levels.SILENT,a)};var m=g();null==m&&(m=null==b?"WARN":b),k.setLevel(m,!1)}var g=function(){},h="undefined",i=["trace","debug","info","warn","error"],j=new f,k={};j.getLogger=function(a){if("string"!=typeof a||""===a)throw new TypeError("You must supply a name when creating a logger.");var b=k[a];return b||(b=k[a]=new f(a,j.getLevel(),j.methodFactory)),b};var l=typeof window!==h?window.log:void 0;return j.noConflict=function(){return typeof window!==h&&window.log===j&&(window.log=l),j},j});
 
@@ -273,66 +284,33 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	 * LIBRARY STARTS HERE
 	 */
 	var isFunctionRE = /^on[a-z]+$/i;
-	var FN_PREFIX = "__fn";
+	var PARAM_NAME = "__data";
 	var LOG_PREFIX = ">>[6oz.js] ";
 	var _lib = {};
 	var _logger = log.getLogger("6oz logger");
 	var _components = {};
 	var _dataRegister = {};
+	var _componentProps = {};
+	var _dataToIncrementalDOM = {};
 
 	function applyToDOM(el, template, templateData) {
 		var renderedTemplate = __tmpl(template, templateData.data);
 		var lexResults = __lex(renderedTemplate);
-		var renderFunctionBody = processLexTemplate(lexResults, templateData);
-		var renderFunction = new Function(FN_PREFIX, renderFunctionBody.join(""));
+		var renderFunctionBody = processLexTemplate(lexResults, templateData.functions, PARAM_NAME + ".__fn");
+		var renderFunction = new Function(PARAM_NAME, renderFunctionBody.join(""));
 
-		IncrementalDOM.patch(el, renderFunction, templateData.functions);
+		_dataToIncrementalDOM.__fn = templateData.functions;
+		IncrementalDOM.patch(el, renderFunction, _dataToIncrementalDOM);
 		_dataRegister = {};
+		_dataToIncrementalDOM = {};
 		return {
 			"update": function (updateTemplateData) {
 				applyToDOM(el, template, updateTemplateData);
 			}
 		};
 	}
-	function processLexTemplate(lexResults, templateData) {
+	function processLexTemplate(lexResults, templateFunctions, functionPrefix) {
 		var renderFunctionBody = [];
-		var processTag = function (cLex) {
-			if (!cLex) {
-				return false;
-			}
-
-			var attributes = cLex.attributes;
-			var tagAttributes = [];
-			var tagAttributesString = "";
-			var elementType = cLex.closeEnd ? "elementVoid" : "elementOpen";
-
-			if (Object.keys(attributes).length > 0) {
-				for (var attributeKey in attributes) {
-					var attribute = attributes[attributeKey];
-					var attributeName = attribute.name;
-					var attributeValue = attribute.value;
-					var isEventAttribute = isFunctionRE.test(attributeName);
-
-					tagAttributes.push('"' + attribute.name + '"');
-
-					if (isEventAttribute) {
-						var candidateFunction = templateData.functions[attributeValue];
-
-						if (typeof(candidateFunction) === "function") {
-							tagAttributes.push(FN_PREFIX + "." + attributeValue);
-						} else {
-							_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
-							tagAttributes.pop();
-						}
-					} else {
-						tagAttributes.push('"' + attribute.value + '"');
-					}
-				}
-			}
-
-			tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
-			return { "elementType": elementType, "tagAttributesString": tagAttributesString };
-		};
 		var isComponentTag = function (tagName) {
 			return tagName && tagName.indexOf("-") > -1;
 		};
@@ -343,11 +321,16 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			var cLexValue = cLex.value;
 			var thisIsComponentTag = isComponentTag(cLexValue);
 
-			if (cLexType == "Tag") {
+			if (cLexType == "ComponentStart") {
+				_dataToIncrementalDOM[cLex.attributes.componentID] = templateFunctions;
+				renderFunctionBody.push('(function (o) {');
+			} else if (cLexType == "ComponentEnd") {
+				renderFunctionBody.push('})(' + PARAM_NAME + '["' + cLex.attributes.componentID + '"]);');
+			} else if (cLexType == "Tag") {
 				if (cLex.closeStart && !thisIsComponentTag) {
 					renderFunctionBody.push('IncrementalDOM.elementClose("' + cLexValue + '");');
 				} else if (thisIsComponentTag) {
-					var componentResults = processComponent(cLex, templateData);
+					var componentResults = processComponent(cLex);
 
 					if (componentResults === false) {
 						continue;
@@ -355,9 +338,10 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 					renderFunctionBody = renderFunctionBody.concat(componentResults);
 				} else {
-					var tagDetails = processTag(cLex);
+					var tagDetails = processTag(cLex, templateFunctions, functionPrefix);
+					var elementKeyID = tagDetails.elementKeyID == null ? "null" : '"' + tagDetails.elementKeyID + '"';
 
-					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",null,null' + tagDetails.tagAttributesString + ');');
+					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",' + elementKeyID + ',null' + tagDetails.tagAttributesString + ');');
 				}
 			} else if (cLexType == "Text") {
 				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue + '");');
@@ -366,7 +350,74 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 		return renderFunctionBody;
 	}
-	function processComponent(cLex, templateData) {
+	function processTag(cLex, templateFunctions, functionPrefix) {
+		if (!cLex) {
+			return false;
+		}
+
+		var attributes = cLex.attributes;
+		var tagAttributes = [];
+		var tagAttributesString = "";
+		var elementType = cLex.closeEnd ? "elementVoid" : "elementOpen";
+		var elementKeyID = null;
+		var checkForFunction = function (templateFunctions, fnName) {
+			if (fnName.indexOf(".") == -1) {
+				return templateFunctions[fnName];
+			}
+
+			var fnNameSplit = fnName.split(".");
+			var fnFound = templateFunctions;
+			var madeItToEnd = true;
+
+			for (var i = 0, l = fnNameSplit.length; i < l; i++) {
+				var currentFn = fnFound[fnNameSplit[i]];
+
+				if (!currentFn) {
+					madeItToEnd = false
+					break;
+				}
+
+				fnFound = currentFn;
+			}
+
+			if (madeItToEnd) {
+				return fnFound;
+			}
+		};
+
+		if (Object.keys(attributes).length > 0) {
+			for (var attributeKey in attributes) {
+				var attribute = attributes[attributeKey];
+				var attributeName = attribute.name;
+				var attributeValue = attribute.value;
+				var isEventAttribute = isFunctionRE.test(attributeName);
+
+				if (attributeName.toLowerCase() == "key-id") {
+					elementKeyID = attributeValue;
+					continue;
+				}
+
+				tagAttributes.push('"' + attribute.name + '"');
+
+				if (isEventAttribute) {
+					var candidateFunction = checkForFunction(templateFunctions, attributeValue);
+
+					if (typeof(candidateFunction) === "function") {
+						tagAttributes.push(functionPrefix + "." + attributeValue);
+					} else {
+						_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
+						tagAttributes.pop();
+					}
+				} else {
+					tagAttributes.push('"' + attribute.value + '"');
+				}
+			}
+		}
+
+		tagAttributesString = tagAttributes.length > 0 ? ',' + tagAttributes.join(',') : "";
+		return { "elementType": elementType, "tagAttributesString": tagAttributesString, "elementKeyID": elementKeyID };
+	}
+	function processComponent(cLex) {
 		var componentName = cLex.value.toLowerCase();
 		var componentDetails = _components[componentName];
 		
@@ -397,20 +448,47 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			}
 		}
 
-		var renderedTemplate = __tmpl(componentDetails.template, { "props": attributes });
-		var lexResults = __lex(renderedTemplate);
+		var componentController;
+		var templateData = {
+			"props": attributes
+		};
 
-		return processLexTemplate(lexResults, templateData);
+		if (componentDetails.controller !== undefined) {
+			componentController = new componentDetails.controller(attributes);
+			templateData.controller = componentController;
+		}
+
+		var renderedTemplate = __tmpl(componentDetails.template, templateData);
+		var lexResults = __lex(renderedTemplate);
+		var componentID = guid();
+
+		lexResults.unshift({ "type": "ComponentStart", "attributes": { "componentID": componentID } });
+		lexResults.push({ "type": "ComponentEnd", "attributes": { "componentID": componentID } });
+		attributes.props = {};
+
+		for (var attributeName in attributes) {
+			attributes.props[attributeName] = attributes[attributeName];
+		}
+
+		if (componentController !== undefined) {
+			attributes.controller = componentController;
+		}
+
+		return processLexTemplate(lexResults, attributes, "o");
 	}
-	function addComponent(componentName, template) {
-		if (!componentName || !template) {
+	function addComponent(o) {
+		o = o || {};
+
+		if (!o.componentName || !o.template) {
 			_logger.warn(LOG_PREFIX + "You must provide a componentName and template.");
 			return false;
 		}
 
-		componentName = componentName.toLowerCase();
+		var componentName = o.componentName.toLowerCase();
+		var controller = o.controller;
+		var controllerToLoad;
 
-		if (!/-[a-zA-Z0-9][^-]?$/.test(componentName)) {
+		if (!/-[a-zA-Z0-9]+[^-]?$/.test(componentName)) {
 			_logger.warn(LOG_PREFIX + "You must provide a valid component name [" + componentName + "].  It must be kebab case, must contain at least one hyphen, and must not end with a hyphen.");
 			return;
 		}
@@ -420,8 +498,13 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			return;
 		}
 
+		if (controller !== undefined && typeof(controller) === "function") {
+			controllerToLoad = controller;
+		}
+
 		_components[componentName] = {
-			"template": template
+			"template": o.template,
+			"controller": controllerToLoad
 		};
 		return true;
 	}

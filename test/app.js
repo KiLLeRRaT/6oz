@@ -145,7 +145,13 @@
 				{ "heading": "Damn Daniel", "text": "Back at it again!" },
 				{ "heading": "In the", "text": "black and white" },
 				{ "heading": "Vans!", "text": "Haha" }
-			]
+			],
+			"com1Heading_click": function () {
+				alert("com1 heading has been clicked");
+			},
+			"com2_click": function () {
+				alert("com2 has been clicked");
+			}
 		},
 		"functions": {
 			"heading_click": heading_click,
@@ -162,12 +168,18 @@
 	var _context;
 	var _components = {
 		"com1": {
-			"name": "custom-component-1",
-			"template": '<h6 onclick="com1Heading_click">Custom Component 1 - <%=props.heading %></h6><p><%=props.text %></p><custom-component-2 text="<%=props.text %> - com2 subby" />'
+			"componentName": "custom-component-1",
+			"template": '<h6 onclick="props.com1Heading_click">Custom Component 1 - <%=props.heading %><span onclick="controller.custom_click">(<%=controller.text %>)</span></h6><p><%=props.text %></p><custom-component-2 com2_click={props.com2_click} text="<%=props.text %> - com2 subby" />',
+			"controller": function () {
+				this.text = "Hello from the controller";
+				this.custom_click = function () {
+					alert("This is a custom event from the controller");
+				};
+			}
 		},
 		"com2": {
-			"name": "custom-component-2",
-			"template": '<div onclick="com2_click"><pre>This is the sub component (com 2)</pre></div><p><%=props.text %></p>'
+			"componentName": "custom-component-2",
+			"template": '<div onclick="props.com2_click"><pre>This is the sub component (com 2)</pre></div><p><%=props.text %></p>'
 		}
 	};
 
@@ -196,8 +208,8 @@
 	}
 
 	function run() {
-		__6oz.addComponent(_components.com1.name, _components.com1.template);
-		__6oz.addComponent(_components.com2.name, _components.com2.template);
+		__6oz.addComponent(_components.com1);
+		__6oz.addComponent(_components.com2);
 
 		fetch("componentApp.html").then(function(response) {
 			return response.text();
