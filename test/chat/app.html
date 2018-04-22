@@ -1,13 +1,13 @@
 <div class="chat-wrapper">
 	<div class="chat-app">
 		<chat-header header={chat1.header.heading} />
-		<chat-window messages={messages} userID={chat1.userID} visitorIsTyping={chat1.visitorIsTyping} />
+		<chat-window messages={messages} userID={chat1.userID} visitorIsTyping={chat1.visitorIsTyping} message_click={message_click} />
 		<chat-controls onKeyPress={chat1.message_keyPress} context={window._context} messages={messages} userID={chat1.userID} visitor={chat1.visitorUser} />
 	</div>
 	
 	<div class="chat-app">
 		<chat-header header={chat2.header.heading} />
-		<chat-window messages={messages} userID={chat2.userID} visitorIsTyping={chat2.visitorIsTyping} />
+		<chat-window messages={messages} userID={chat2.userID} visitorIsTyping={chat2.visitorIsTyping} message_click={message_click} />
 		<chat-controls onKeyPress={chat2.message_keyPress} context={window._context} messages={messages} userID={chat2.userID} visitor={chat2.visitorUser} />
 	</div>
 </div>

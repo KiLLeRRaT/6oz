@@ -1,5 +1,5 @@
 /**
- * v1.0.0
+ * v1.0.1
  * 6oz because coffee
       ( (
       ) )
@@ -263,7 +263,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 				// Convert the template into pure JavaScript
 				// Grabbed apostrophe fix from http://weblog.west-wind.com/posts/2008/Oct/13/Client-Templating-with-jQuery
 				str
-					.replace(new RegExp("\{(.+?(\}+)?)\}", "g"), "',__6oz.registerData($1),'")
+					.replace(new RegExp("=\{(.+?(\}+)?)\}", "g"), "=',__6oz.registerData($1),'")
 					.replace(/[\r\t\n]/g, " ")
 					.replace(new RegExp("'(?=[^" + DELIMITER.end.substr(0, 1) + "]*" + DELIMITER.end + ")", "g"), "\t")
 					.split("(?!\})'(?!\{)").join("\\'")
@@ -284,6 +284,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	 * LIBRARY STARTS HERE
 	 */
 	var isFunctionRE = /^on[a-z]+$/i;
+	var isPropRE = /^props$/i;
 	var PARAM_NAME = "__data";
 	var LOG_PREFIX = ">>[6oz.js] ";
 	var _lib = {};
@@ -298,6 +299,8 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		var lexResults = __lex(renderedTemplate);
 		var renderFunctionBody = processLexTemplate(lexResults, templateData.functions, PARAM_NAME + ".__fn");
 		var renderFunction = new Function(PARAM_NAME, renderFunctionBody.join(""));
+
+		
 
 		_dataToIncrementalDOM.__fn = templateData.functions;
 		IncrementalDOM.patch(el, renderFunction, _dataToIncrementalDOM);
@@ -391,6 +394,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 				var attributeName = attribute.name;
 				var attributeValue = attribute.value;
 				var isEventAttribute = isFunctionRE.test(attributeName);
+				var isPropAttribute = isPropRE.test(attributeName);
 
 				if (attributeName.toLowerCase() == "key-id") {
 					elementKeyID = attributeValue;
@@ -408,8 +412,23 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 						_logger.warn(LOG_PREFIX + "Could not find the function " + attributeValue + " so event was not bound.");
 						tagAttributes.pop();
 					}
-				} else {
-					tagAttributes.push('"' + attribute.value + '"');
+				} else if (isPropAttribute) {
+					if (!_dataToIncrementalDOM.attributeProps) {
+						_dataToIncrementalDOM.attributeProps = {};
+					}
+					
+					var attributeFinalValue = '"' + attribute.value + '"';
+					var attributeGUID = /\{([a-zA-Z0-9\-]+)\}/.exec(attributeValue);
+
+					if (attributeGUID && attributeGUID.length > 1) {
+						attributeGUID = attributeGUID[1];
+						_dataToIncrementalDOM.attributeProps[attributeGUID] = _dataRegister[attributeGUID];
+						attributeFinalValue = PARAM_NAME + ".attributeProps['" + attributeGUID + "']";
+					}
+
+					tagAttributes.push(attributeFinalValue);
+			 	} else {
+					tagAttributes.push('"' + attributeValue + '"');
 				}
 			}
 		}
@@ -527,4 +546,8 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 	_lib.registerData = registerData;
 
 	window.__6oz = _lib;
+
+	IncrementalDOM.attributes.props = function (el, name, value) {
+		el[name] = value;
+	}
 })();

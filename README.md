@@ -111,6 +111,32 @@ context.update(templateData);
 ##### Lists (key-id)
 Within your templates you may have items that are repeated such as list items (li) or select options (option).  Incremental DOM can have a hard time discerning the differences when updating if the items are similar.  To aid the diffing process, add an attribute of `key-id` on your repeating element.  More about this here, http://google.github.io/incremental-dom/#conditional-rendering/array-of-items.
 
+##### Props
+Introduced in v1.0.1 you can now attach data properties to an element by using the attribute `props` on your element.  This is a special attribute for 6oz and it will attach the data to that element.  This should be used in place of storing literal values on the DOM itself.  You can store any JavaScript object using this.  i.e. string, bool, numbers, functions, object.
+
+You can access the properties attached in any event function(s) on that element.  It is accessible via `this.props`.
+
+_Below is template code_
+```
+<div id={elementID} props={myDivProperties} onclick={div_click}></div>
+```
+_Below is JavaScript code_
+```
+var data = {
+	"elementID": "divHelloWorld",
+	"myDivProperties": {
+		"isTest": true,
+		"myCustomFunction": function () {
+			console.log("Hello world!");
+		},
+		"myInt": 1000
+	},
+	"div_click": function () {
+		console.log("This is how you access your properties in events", this.props);
+	}
+};
+```
+
 ## Components
 6oz.js allows you to create components which are templates that can be reused.  You can define components using the snippet below.  The component name must be kebab case and contain at least one hyphen.  The second parameter must be the template or the template ID.
 
@@ -159,6 +185,10 @@ for (var i = 0, l = arr.length; i < l; i++) { %>
 <% } %>
 </ul>
 ```
+
+## FAQ
+### Unusual rendering and event bindings are occurring
+This can occur when the Incremental DOM library cannot discern the difference between two elements in updates.  This can occur if the DOM structure is similar in two different templates.  To resolve this, place a key-id on the top level element that is having issues.  Refer to Lists (key-id) above in README.
 
 ## Authors
 

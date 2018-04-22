@@ -1,1 +1,1 @@
-<div class="chat-message <%=props.isCurrentUser ? "message-owner" : "message-visitor" %>"><%=props.message %></div>
+<div class="chat-message <%=props.isCurrentUser ? "message-owner" : "message-visitor" %>" props={{ "isCurrentUser": props.isCurrentUser, "test": true }} onclick="message_click"><%=props.message %></div>

@@ -2,7 +2,7 @@
 <% for (var i = 0, l = props.messages.length; i < l; i++) { 
 	var message = props.messages[i];
 	%>
-	<chat-message message={message.text} isCurrentUser={props.userID == message.userID} />
+	<chat-message message={message.text} isCurrentUser={props.userID == message.userID} message_click={props.message_click} />
 <% } %>
 <% if (props.visitorIsTyping) { %>
 	<chat-typing-indicator />

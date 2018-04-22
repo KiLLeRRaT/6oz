@@ -7,6 +7,9 @@
 				{ "text": "Second one eh?", "userID": 1 },
 				{ "text": "Hi!", "userID": 2 },
 			],
+			"message_click": function (e) {
+				console.log("Message has been clicked", this.props);
+			},
 			"chat1": {
 				"header": {
 					"heading": "Chat Window 1"
