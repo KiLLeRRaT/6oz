@@ -19,7 +19,7 @@ Templating is done using code blocks.  Within the code blocks you can use normal
 #### Rendering Data
 To render data in your template that is not HTML encoded use the start block `<%=`.  Use this if you wish to write in HTML into the template.
 
-To render data in your template that is HTML encoded use the start block `<%:`.  Use this if you wish to write in HTML into the template.
+To render data in your template that is HTML encoded use the start block `<%:`.  Use this if you wish to write in text into the template.
 
 For the examples below we are using the following variable
 ```
