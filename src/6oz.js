@@ -347,7 +347,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",' + elementKeyID + ',null' + tagDetails.tagAttributesString + ');');
 				}
 			} else if (cLexType == "Text") {
-				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue + '");');
+				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue.replace(/(?:\r\n|\r|\n)/g, "") + '");');
 			}
 		}
 
