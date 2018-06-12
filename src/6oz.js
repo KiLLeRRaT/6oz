@@ -392,7 +392,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			for (var attributeKey in attributes) {
 				var attribute = attributes[attributeKey];
 				var attributeName = attribute.name;
-				var attributeValue = attribute.value;
+				var attributeValue = attribute.value.replace(/(?:\r\n|\r|\n)/g, "");
 				var isEventAttribute = isFunctionRE.test(attributeName);
 				var isPropAttribute = isPropRE.test(attributeName);
 
