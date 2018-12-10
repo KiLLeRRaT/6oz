@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Released]
 
+## [1.0.2] - 2018-12-10
+### Added
+- Added ability to skip nodes.  To be used for external libraries.
+
+### Changed
+- Changed the lex and templating to escape values correctly.  Fixes bug.
+
+### Removed
+- Nothing.
+
 ## [1.0.1] - 2018-04-22
 ### Added
 - Added changelog file.

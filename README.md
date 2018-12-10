@@ -137,6 +137,17 @@ var data = {
 };
 ```
 
+##### Ignoring elements (skip-node)
+When using external libraries that mutate the DOM, 6oz will need to ignore the parent element that the external library is contained in.  If this isn't applied, when 6oz updates the DOM it will override the changes to the DOM.  To ignore a DOM element, add `skip-node="true"` to the element.  It will ignore the element you apply the attribute to and all it's children.
+
+```
+<div>
+	<h1>This is the header for the template</h1>
+	<p><%:paragraphText %></p>
+	<div class="external-lookup" skip-node="true"></div>
+</div>
+```
+
 ## Components
 6oz.js allows you to create components which are templates that can be reused.  You can define components using the snippet below.  The component name must be kebab case and contain at least one hyphen.  The second parameter must be the template or the template ID.
 

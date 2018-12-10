@@ -1,5 +1,5 @@
 /**
- * v1.0.1
+ * v1.0.2
  * 6oz because coffee
       ( (
       ) )
@@ -12,7 +12,7 @@
 /*! loglevel - v1.4.1 - https://github.com/pimterry/loglevel - (c) 2016 Tim Perry - licensed MIT */
 !function(a,b){"use strict";"function"==typeof define&&define.amd?define(b):"object"==typeof module&&module.exports?module.exports=b():a.log=b()}(this,function(){"use strict";function a(a){return typeof console===h?!1:void 0!==console[a]?b(console,a):void 0!==console.log?b(console,"log"):g}function b(a,b){var c=a[b];if("function"==typeof c.bind)return c.bind(a);try{return Function.prototype.bind.call(c,a)}catch(d){return function(){return Function.prototype.apply.apply(c,[a,arguments])}}}function c(a,b,c){return function(){typeof console!==h&&(d.call(this,b,c),this[a].apply(this,arguments))}}function d(a,b){for(var c=0;c<i.length;c++){var d=i[c];this[d]=a>c?g:this.methodFactory(d,a,b)}}function e(b,d,e){return a(b)||c.apply(this,arguments)}function f(a,b,c){function f(a){var b=(i[a]||"silent").toUpperCase();try{return void(window.localStorage[l]=b)}catch(c){}try{window.document.cookie=encodeURIComponent(l)+"="+b+";"}catch(c){}}function g(){var a;try{a=window.localStorage[l]}catch(b){}if(typeof a===h)try{var c=window.document.cookie,d=c.indexOf(encodeURIComponent(l)+"=");d&&(a=/^([^;]+)/.exec(c.slice(d))[1])}catch(b){}return void 0===k.levels[a]&&(a=void 0),a}var j,k=this,l="loglevel";a&&(l+=":"+a),k.levels={TRACE:0,DEBUG:1,INFO:2,WARN:3,ERROR:4,SILENT:5},k.methodFactory=c||e,k.getLevel=function(){return j},k.setLevel=function(b,c){if("string"==typeof b&&void 0!==k.levels[b.toUpperCase()]&&(b=k.levels[b.toUpperCase()]),!("number"==typeof b&&b>=0&&b<=k.levels.SILENT))throw"log.setLevel() called with invalid level: "+b;return j=b,c!==!1&&f(b),d.call(k,b,a),typeof console===h&&b<k.levels.SILENT?"No console available for logging":void 0},k.setDefaultLevel=function(a){g()||k.setLevel(a,!1)},k.enableAll=function(a){k.setLevel(k.levels.TRACE,a)},k.disableAll=function(a){k.setLevel(k.levels.SILENT,a)};var m=g();null==m&&(m=null==b?"WARN":b),k.setLevel(m,!1)}var g=function(){},h="undefined",i=["trace","debug","info","warn","error"],j=new f,k={};j.getLogger=function(a){if("string"!=typeof a||""===a)throw new TypeError("You must supply a name when creating a logger.");var b=k[a];return b||(b=k[a]=new f(a,j.getLevel(),j.methodFactory)),b};var l=typeof window!==h?window.log:void 0;return j.noConflict=function(){return typeof window!==h&&window.log===j&&(window.log=l),j},j});
 
-var __escapeHTML = function escapeHTML(rawHTML) {
+var __escapeHTML = function (rawHTML) {
 	if (!rawHTML) {
 		return "";
 	}
@@ -26,7 +26,23 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
+		.replace(/'/g, "&apos;");
+};
+var __unescapeHTML = function (rawValue) {
+	if (!rawValue) {
+		return "";
+	}
+
+	if (typeof rawValue != "string") {
+		rawValue = rawValue.toString();
+	}
+
+	return rawValue
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, "\"")
+		.replace(/&apos;/g, "'");
 };
 
 (function () {
@@ -51,13 +67,16 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		// Dynamic expressions
 		var expressionRE = /"[^"]*"|'[^']*'|\d+[a-zA-Z$_]\w*|\.[a-zA-Z$_]\w*|[a-zA-Z$_]\w*:|([a-zA-Z$_]\w*)(?:\s*\()?/g;
 		// HTML Escapes
-		var escapeRE = /(?:(?:&(?:amp|gt|lt|nbsp|quot);)|"|\\|\n)/g;
+		var escapeRE = /(?:(?:&(?:amp|gt|lt|nbsp|quot|apos|#39);)|'|"|\\|\n)/g;
 		var escapeMap = {
 			"&amp;": '&',
 			"&gt;": '>',
 			"&lt;": '<',
 			"&nbsp;": ' ',
 			"&quot;": "\\\"",
+			"&apos;": "\\\'",
+			"&#39;": "\\\'",
+			"'": "\\\'",
 			'\\': "\\\\",
 			'"': "\\\"",
 			'\n': "\\n"
@@ -101,7 +120,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 						var tagToken = {
 							type: "Tag",
 							value: ''
-						}
+						};
 				
 						var tagType = '';
 						var attributes = {};
@@ -136,7 +155,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 									attrName += char;
 									char = template[++current];
 								}
-					
+
 								// Find attribute value
 								if (char === '=') {
 									char = template[++current];
@@ -180,10 +199,10 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 					
 								var attrToken = {
 									name: attrName,
-									value: attrValue,
+									value: __unescapeHTML(attrValue),
 									argument: undefined,
 									data: {}
-								}
+								};
 					
 								var splitAttrName = attrName.split(':');
 
@@ -247,37 +266,37 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			// Figure out if we're getting a template, or if we need to
 			// load the template - and be sure to cache the result.
 			var fn = !/\W/.test(str) ?
-			cache[str] = cache[str] ||
+				cache[str] = cache[str] ||
 				tmpl(document.getElementById(str).innerHTML) :
 
-			// Generate a reusable function that will serve as a template
-			// generator (and which will be cached).
-			new Function("obj",
-				"var p=[],print=function(){p.push.apply(p,arguments);};" +
-				//PM - Added fix for issue where null obj throws an error
-				"obj = obj || {};" +
+				// Generate a reusable function that will serve as a template
+				// generator (and which will be cached).
+				new Function("obj",
+					"var p=[],print=function(){p.push.apply(p,arguments);};" +
+					//PM - Added fix for issue where null obj throws an error
+					"obj = obj || {};" +
 
-				// Introduce the data as local variables using with(){}
-				"with(obj){p.push('" +
+					// Introduce the data as local variables using with(){}
+					"with(obj){p.push('" +
 
-				// Convert the template into pure JavaScript
-				// Grabbed apostrophe fix from http://weblog.west-wind.com/posts/2008/Oct/13/Client-Templating-with-jQuery
-				str
-					.replace(new RegExp("=\{(.+?(\}+)?)\}", "g"), "=',__6oz.registerData($1),'")
-					.replace(/[\r\t\n]/g, " ")
-					.replace(new RegExp("'(?=[^" + DELIMITER.end.substr(0, 1) + "]*" + DELIMITER.end + ")", "g"), "\t")
-					.split("(?!\})'(?!\{)").join("\\'")
-					.split("\t").join("'")
-					.replace(new RegExp(DELIMITER.start + ":(.+?)" + DELIMITER.end, "g"), "',__escapeHTML($1),'")
-					.replace(new RegExp(DELIMITER.start + "=(.+?)" + DELIMITER.end, "g"), "',$1,'")
-					.split(DELIMITER.start).join("');")
-					.split(DELIMITER.end).join("p.push('")
-				+ "');}return p.join('');"
-			);
+					// Convert the template into pure JavaScript
+					// Grabbed apostrophe fix from http://weblog.west-wind.com/posts/2008/Oct/13/Client-Templating-with-jQuery
+					str
+						.replace(/[\r\t\n]/g, " ")
+						.replace(new RegExp("'(?=[^" + DELIMITER.end.substr(0, 1) + "]*" + DELIMITER.end + ")", "g"), "\t")
+						.split("'").join("\\'")
+						.replace(new RegExp("=\{(.+?(\}+)?)\}", "g"), "=',__6oz.registerData($1),'")
+						.split("\t").join("'")
+						.replace(new RegExp(DELIMITER.start + ":(.+?)" + DELIMITER.end, "g"), "',__escapeHTML($1),'")
+						.replace(new RegExp(DELIMITER.start + "=(.+?)" + DELIMITER.end, "g"), "',$1,'")
+						.split(DELIMITER.start).join("');")
+						.split(DELIMITER.end).join("p.push('")
+					+ "');}return p.join('');"
+				);
 
 			// Provide some basic currying to the user
 			return data ? fn(data) : fn;
-		}
+		};
 	})();
 
 	/**
@@ -300,8 +319,6 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		var renderFunctionBody = processLexTemplate(lexResults, templateData.functions, PARAM_NAME + ".__fn");
 		var renderFunction = new Function(PARAM_NAME, renderFunctionBody.join(""));
 
-		
-
 		_dataToIncrementalDOM.__fn = templateData.functions;
 		IncrementalDOM.patch(el, renderFunction, _dataToIncrementalDOM);
 		_dataRegister = {};
@@ -317,12 +334,22 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		var isComponentTag = function (tagName) {
 			return tagName && tagName.indexOf("-") > -1;
 		};
+		var nodeLevel = 0;
+		var weAreSkippingNodes = false;
 
 		for (var i = 0, l = lexResults.length; i < l; i++) {
 			var cLex = lexResults[i];
 			var cLexType = cLex.type;
 			var cLexValue = cLex.value;
 			var thisIsComponentTag = isComponentTag(cLexValue);
+			var isSkipNode = cLex.attributes && cLex.attributes["skip-node"] && cLex.attributes["skip-node"].value == "true";
+			var getTagDetails = function (c, t, f) {
+				var results = processTag(c, t, f);
+
+				results.elementKeyID = results.elementKeyID == null ? "null" : '"' + results.elementKeyID + '"';
+				return results;
+			};
+			var tagDetails;
 
 			if (cLexType == "ComponentStart") {
 				_dataToIncrementalDOM[cLex.attributes.componentID] = templateFunctions;
@@ -330,9 +357,21 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			} else if (cLexType == "ComponentEnd") {
 				renderFunctionBody.push('})(' + PARAM_NAME + '["' + cLex.attributes.componentID + '"]);');
 			} else if (cLexType == "Tag") {
-				if (cLex.closeStart && !thisIsComponentTag) {
-					renderFunctionBody.push('IncrementalDOM.elementClose("' + cLexValue + '");');
-				} else if (thisIsComponentTag) {
+				if (!cLex.closeStart && isSkipNode && !weAreSkippingNodes) {
+					tagDetails = getTagDetails(cLex, templateFunctions, functionPrefix);
+					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",' + tagDetails.elementKeyID + ',null' + tagDetails.tagAttributesString + ');');
+					renderFunctionBody.push("IncrementalDOM.skip();");
+					weAreSkippingNodes = true;
+					nodeLevel = 0;
+				} else if (cLex.closeStart && !thisIsComponentTag) {
+					if (nodeLevel-- == 0) {
+						weAreSkippingNodes = false;
+					}
+
+					if (!weAreSkippingNodes) {
+						renderFunctionBody.push('IncrementalDOM.elementClose("' + cLexValue + '");');
+					}
+				} else if (thisIsComponentTag && !weAreSkippingNodes) {
 					var componentResults = processComponent(cLex);
 
 					if (componentResults === false) {
@@ -340,14 +379,16 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 					}
 
 					renderFunctionBody = renderFunctionBody.concat(componentResults);
-				} else {
-					var tagDetails = processTag(cLex, templateFunctions, functionPrefix);
-					var elementKeyID = tagDetails.elementKeyID == null ? "null" : '"' + tagDetails.elementKeyID + '"';
+				} else if (!thisIsComponentTag) {
+					nodeLevel++;
 
-					renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",' + elementKeyID + ',null' + tagDetails.tagAttributesString + ');');
+					if (!weAreSkippingNodes) {
+						tagDetails = getTagDetails(cLex, templateFunctions, functionPrefix);
+						renderFunctionBody.push('IncrementalDOM.' + tagDetails.elementType + '("' + cLexValue + '",' + tagDetails.elementKeyID + ',null' + tagDetails.tagAttributesString + ');');
+					}
 				}
-			} else if (cLexType == "Text") {
-				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue + '");');
+			} else if (cLexType == "Text" && !weAreSkippingNodes) {
+				renderFunctionBody.push('IncrementalDOM.text("' + cLexValue.replace(/(?:\r\n|\r|\n)/g, "") + '");');
 			}
 		}
 
@@ -376,7 +417,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 				var currentFn = fnFound[fnNameSplit[i]];
 
 				if (!currentFn) {
-					madeItToEnd = false
+					madeItToEnd = false;
 					break;
 				}
 
@@ -392,7 +433,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 			for (var attributeKey in attributes) {
 				var attribute = attributes[attributeKey];
 				var attributeName = attribute.name;
-				var attributeValue = attribute.value;
+				var attributeValue = attribute.value.replace(/(?:\r\n|\r|\n)/g, "");
 				var isEventAttribute = isFunctionRE.test(attributeName);
 				var isPropAttribute = isPropRE.test(attributeName);
 
@@ -427,8 +468,8 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 					}
 
 					tagAttributes.push(attributeFinalValue);
-			 	} else {
-					tagAttributes.push('"' + attributeValue + '"');
+				} else {
+					tagAttributes.push('"' + attributeValue.replace(/"/g, "\\\"") + '"');
 				}
 			}
 		}
@@ -537,7 +578,7 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 		function S4() {
 			return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
 		}
-		 
+
 		return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
 	}
 
@@ -549,5 +590,5 @@ var __escapeHTML = function escapeHTML(rawHTML) {
 
 	IncrementalDOM.attributes.props = function (el, name, value) {
 		el[name] = value;
-	}
+	};
 })();
