@@ -11,6 +11,32 @@ You will need to download and place both the Incremental DOM and 6oz.js JavaScri
 <script type="text/javascript" src="6oz.min.js"></script>
 ```
 
+From there you can render a basic template
+
+```
+<div id="app"></div>
+
+<script type="text/javascript">
+var template = '<%:text %> <button onclick="universe_click">I am the universe</button>';
+
+var templateData = {
+	"data": {
+		"text": "Hello world"
+	},
+	"functions": {
+		"universe_click": universe
+	}
+};
+
+var context = __6oz.applyToDOM(document.getElementById("app"), template, templateData);
+
+function universe() {
+	templateData.data.text = "Hello universe";
+	context.update(templateData);
+}
+</script>
+```
+
 ## Templating
 
 Templating is done using code blocks.  Within the code blocks you can use normal JavaScript.  Simple!  The code blocks are inspired by and match to ASP.Net Web Forms code blocks.  To start a code block write `<%` and to close a code block write `%>`.
@@ -50,15 +76,17 @@ You can run JavaScript right in your template.  This is useful to conditionally 
 For the example below we are using the following variable
 ```
 var templateData = {
-	"header": "My Example",
-	"showHeader": true,
-	"items": [
-		"Hi there",
-		"Hello mate",
-		"Gidday",
-		"Mate",
-		"Dave"
-	]
+	"data": {
+		"header": "My Example",
+		"showHeader": true,
+		"items": [
+			"Hi there",
+			"Hello mate",
+			"Gidday",
+			"Mate",
+			"Dave"
+		]
+	}
 };
 ```
 **Template**
