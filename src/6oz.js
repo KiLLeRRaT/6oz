@@ -346,7 +346,7 @@ var __unescapeHTML = function (rawValue) {
 			var getTagDetails = function (c, t, f) {
 				var results = processTag(c, t, f);
 
-				results.elementKeyID = results.elementKeyID == null ? "null" : '"' + results.elementKeyID + '"';
+				results.elementKeyID = results.elementKeyID == null ? "null" : JSON.stringify(results.elementKeyID);
 				return results;
 			};
 			var tagDetails;
@@ -442,7 +442,7 @@ var __unescapeHTML = function (rawValue) {
 					continue;
 				}
 
-				tagAttributes.push('"' + attribute.name + '"');
+				tagAttributes.push(JSON.stringify(attribute.name));
 
 				if (isEventAttribute) {
 					var candidateFunction = checkForFunction(templateFunctions, attributeValue);
@@ -458,7 +458,7 @@ var __unescapeHTML = function (rawValue) {
 						_dataToIncrementalDOM.attributeProps = {};
 					}
 					
-					var attributeFinalValue = '"' + attribute.value + '"';
+					var attributeFinalValue = JSON.stringify(attribute.value);
 					var attributeGUID = /\{([a-zA-Z0-9\-]+)\}/.exec(attributeValue);
 
 					if (attributeGUID && attributeGUID.length > 1) {
@@ -469,7 +469,7 @@ var __unescapeHTML = function (rawValue) {
 
 					tagAttributes.push(attributeFinalValue);
 				} else {
-					tagAttributes.push('"' + attributeValue.replace(/"/g, "\\\"") + '"');
+					tagAttributes.push(JSON.stringify(attributeValue));
 				}
 			}
 		}
