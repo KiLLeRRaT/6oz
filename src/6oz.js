@@ -438,7 +438,7 @@ var __unescapeHTML = function (rawValue) {
 				var isPropAttribute = isPropRE.test(attributeName);
 
 				if (attributeName.toLowerCase() == "key-id") {
-					elementKeyID = attributeValue;
+					elementKeyID = JSON.stringify(attributeValue);
 					continue;
 				}
 
